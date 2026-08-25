@@ -1,0 +1,36 @@
+name: 电费采集
+
+on:
+  schedule:
+    - cron: '35 * * * *'   # 每小时第35分钟（UTC，对应北京时间任意小时35分）
+  workflow_dispatch:        # 允许手动触发
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 运行采集脚本
+        env:
+          BUILD_ID: ${{ secrets.BUILD_ID }}
+          ROOM_ID: ${{ secrets.ROOM_ID }}
+          DINGTALK_TOKEN: ${{ secrets.DINGTALK_TOKEN }}
+        run: python collect.py
+
+      - name: 提交数据文件
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "自动采集电量数据 $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || echo "没有变更"
+          git push
