@@ -1,0 +1,9 @@
+# 忽略临时文件和日志
+collect.log
+data.jsonl.tmp
+last_alert_date.txt.tmp
+
+# Python
+__pycache__/
+*.pyc
+.env
